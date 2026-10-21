@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      (function() {
+        try {
+          var saved = localStorage.getItem('theme') || localStorage.getItem('mbw_theme');
+          var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          if (saved === 'dark' || (!saved && prefersDark)) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <title>Mide's Beauty World | UNIMAID Campus Boutique</title>
+    <meta name="description" content="Shop Curated Unisex Streetwear, Chunky Kicks, Bags & Accessories. Fast Hostel & Campus Gate Delivery!" />
+
+    <!-- Open Graph / WhatsApp Status Preview -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Mide's Beauty World | UNIMAID Campus Boutique" />
+    <meta property="og:description" content="Shop Curated Unisex Streetwear, Chunky Kicks, Bags & Accessories. Fast Hostel & Campus Gate Delivery!" />
+    <meta property="og:image" content="/og-cover.jpg" />
+    <meta property="og:site_name" content="Mide's Beauty World" />
+
+    <!-- Twitter / X Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Mide's Beauty World | UNIMAID Campus Boutique" />
+    <meta name="twitter:description" content="Campus streetwear, kicks & accessories. Fast UNIMAID hostel delivery!" />
+    <meta name="twitter:image" content="/og-cover.jpg" />
+
+    <!-- PWA & Mobile -->
+    <link rel="manifest" href="/manifest.json" />
+    <meta name="theme-color" content="#121212" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MBW Studio" />
+    <link rel="apple-touch-icon" href="/icon-192x192.png" />
+
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+  </body>
+</html>
