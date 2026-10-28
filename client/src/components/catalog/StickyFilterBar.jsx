@@ -1,14 +1,8 @@
 import { useRef, useState } from 'react';
 import { Search, X, SlidersHorizontal } from 'lucide-react';
 import { useCatalog } from '../../context/CatalogContext';
-
-const CATEGORIES = [
-  { key: 'all', label: 'All' },
-  { key: 'clothing', label: 'Clothing' },
-  { key: 'footwear', label: 'Footwear' },
-  { key: 'bags', label: 'Bags' },
-  { key: 'jewelry', label: 'Jewelry & Accs' },
-];
+import { useStoreConfig } from '../../context/StoreConfigContext';
+import { DEFAULT_CATEGORIES } from '../../utils/categories';
 
 const SORT_OPTIONS = [
   { key: 'popular', label: 'Most Popular' },
@@ -19,6 +13,11 @@ const SORT_OPTIONS = [
 
 export default function StickyFilterBar() {
   const { activeCategory, setActiveCategory, searchQuery, setSearchQuery, sortBy, setSortBy } = useCatalog();
+  const { storeConfig } = useStoreConfig();
+  const categories = [
+    { key: 'all', label: 'All' },
+    ...(storeConfig?.categories?.length ? storeConfig.categories : DEFAULT_CATEGORIES),
+  ];
   const [sortSheetOpen, setSortSheetOpen] = useState(false);
   const [desktopSortOpen, setDesktopSortOpen] = useState(false);
   const searchRef = useRef(null);
@@ -29,7 +28,7 @@ export default function StickyFilterBar() {
 
   return (
     <>
-      <div className="sticky top-0 z-40 w-full bg-[#FAF7F2]/95 dark:bg-[#121110]/95 backdrop-blur-md border-b border-neutral-200/70 dark:border-neutral-800 transition-all duration-200 shadow-xs pt-1 pb-2">
+      <div className="sticky top-0 z-40 w-full bg-[#FAF7F2]/95 dark:bg-[#121110]/95 backdrop-blur-md border-b border-neutral-200/70 dark:border-neutral-800 shadow-xs pt-1 pb-2">
         {/* ── DESKTOP LAYOUT ── */}
         <div className="hidden md:flex max-w-7xl mx-auto px-4 py-2 flex-col md:flex-row items-center justify-between gap-3">
           {/* Search */}
@@ -57,12 +56,12 @@ export default function StickyFilterBar() {
           </div>
 
           {/* Category pills */}
-          <div className="flex items-center gap-2 flex-1 justify-center">
-            {CATEGORIES.map(({ key, label }) => (
+          <div className="flex items-center gap-2 flex-1 min-w-0 justify-center overflow-x-auto no-scrollbar">
+            {categories.map(({ key, label }) => (
               <button
                 key={key}
                 onClick={() => setActiveCategory(key)}
-                className={`px-3.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                className={`flex-none px-3.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                   activeCategory === key
                     ? 'bg-[#C07052] text-white shadow-xs'
                     : inactivePill
@@ -132,11 +131,11 @@ export default function StickyFilterBar() {
           <div className="flex items-center gap-1.5 px-4 pb-2">
             <div className="flex-1 scroll-fade-right overflow-hidden">
               <div className="no-scrollbar flex gap-1.5 overflow-x-auto pr-3">
-                {CATEGORIES.map(({ key, label }) => (
+                {categories.map(({ key, label }) => (
                   <button
                     key={key}
                     onClick={() => setActiveCategory(key)}
-                    className={`flex-none px-3.5 py-1 rounded-full text-xs font-medium transition-all whitespace-nowrap ${
+                    className={`flex-none px-3.5 py-1 rounded-full text-xs font-medium whitespace-nowrap ${
                       activeCategory === key
                         ? 'bg-[#C07052] text-white shadow-xs'
                         : inactivePill

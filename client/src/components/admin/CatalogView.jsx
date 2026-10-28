@@ -443,6 +443,7 @@ export default function CatalogView() {
 
       {/* ── Product Editor Modal ── */}
       <ProductEditorModal
+        key={`${isEditorOpen ? 'open' : 'closed'}-${selectedProduct?._id || 'new'}`}
         product={selectedProduct}
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}

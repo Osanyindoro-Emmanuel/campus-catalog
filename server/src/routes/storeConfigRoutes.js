@@ -24,7 +24,7 @@ router.get('/', async (req, res) => {
         },
       });
     }
-    res.status(200).json(config);
+    res.status(200).json({ ...config.toObject(), examinationMode: config.lectureMode });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch store config', error: error.message });
   }
@@ -38,10 +38,23 @@ router.patch('/', verifyAdminToken, async (req, res) => {
       config = new StoreConfig();
     }
 
-    const { deliveryFee, lectureMode, bankDetails, broadcast, fulfillmentSplit } = req.body;
+    const {
+      deliveryFee,
+      examinationMode,
+      lectureMode: legacyExaminationMode,
+      inLectureMode,
+      lectureModeMessage,
+      bankDetails,
+      broadcast,
+      fulfillmentSplit,
+      categories,
+    } = req.body;
 
     if (deliveryFee !== undefined) config.deliveryFee = deliveryFee;
-    if (lectureMode !== undefined) config.lectureMode = lectureMode;
+    const nextExaminationMode = examinationMode ?? legacyExaminationMode;
+    if (nextExaminationMode !== undefined) config.lectureMode = nextExaminationMode;
+    if (inLectureMode !== undefined) config.inLectureMode = inLectureMode;
+    if (lectureModeMessage !== undefined) config.lectureModeMessage = lectureModeMessage;
     if (bankDetails) {
       config.bankDetails = { ...config.bankDetails.toObject(), ...bankDetails };
     }
@@ -51,9 +64,26 @@ router.patch('/', verifyAdminToken, async (req, res) => {
     if (fulfillmentSplit) {
       config.fulfillmentSplit = { ...config.fulfillmentSplit.toObject(), ...fulfillmentSplit };
     }
+    if (categories !== undefined) {
+      if (!Array.isArray(categories)) {
+        return res.status(400).json({ message: 'Categories must be a list.' });
+      }
+      const normalizedCategories = categories.map(({ key, label } = {}) => ({
+        key: String(key || '').trim().toLowerCase(),
+        label: String(label || '').trim(),
+      }));
+      const keys = normalizedCategories.map(({ key }) => key);
+      if (
+        normalizedCategories.some(({ key, label }) => !key || !label || key === 'all') ||
+        new Set(keys).size !== keys.length
+      ) {
+        return res.status(400).json({ message: 'Each category needs a unique key and label.' });
+      }
+      config.categories = normalizedCategories;
+    }
 
     await config.save();
-    res.status(200).json(config);
+    res.status(200).json({ ...config.toObject(), examinationMode: config.lectureMode });
   } catch (error) {
     res.status(500).json({ message: 'Failed to update store config', error: error.message });
   }
@@ -68,7 +98,7 @@ router.post('/toggle-lecture', verifyAdminToken, async (req, res) => {
     }
     config.lectureMode = !config.lectureMode;
     await config.save();
-    res.status(200).json({ lectureMode: config.lectureMode });
+    res.status(200).json({ lectureMode: config.lectureMode, examinationMode: config.lectureMode });
   } catch (error) {
     res.status(500).json({ message: 'Failed to toggle lecture mode', error: error.message });
   }

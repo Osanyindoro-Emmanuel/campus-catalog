@@ -75,25 +75,6 @@
 }
 
 @layer base {
-  body,
-  div,
-  header,
-  footer,
-  section,
-  button,
-  input,
-  article,
-  aside,
-  nav,
-  main,
-  span,
-  a,
-  label {
-    transition-property: color, background-color, border-color, fill, stroke;
-    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-    transition-duration: 200ms;
-  }
-
   body {
     @apply bg-[#FAF7F2] text-neutral-900 dark:bg-[#121110] dark:text-neutral-100 antialiased;
     -webkit-tap-highlight-color: transparent;

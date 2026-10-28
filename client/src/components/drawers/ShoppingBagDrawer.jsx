@@ -94,10 +94,10 @@ export default function ShoppingBagDrawer() {
         </div>
 
         {/* ── Lecture mode notice ── */}
-        {storeConfig?.lectureMode && (
+        {storeConfig?.inLectureMode && (
           <div className="mx-5 mt-4 flex items-start gap-2 bg-status-reservedFill text-status-reservedText text-xs font-medium px-4 py-3 rounded-xl border border-amber-200">
             <AlertCircle size={14} className="mt-0.5 flex-none" />
-            Mide is currently in lectures. Orders remain open — replies & deliveries resume shortly!
+            {storeConfig?.lectureModeMessage}
           </div>
         )}
 

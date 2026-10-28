@@ -5,6 +5,9 @@ import StickyFilterBar from './components/catalog/StickyFilterBar';
 import DynamicSpotlightHero from './components/hero/DynamicSpotlightHero';
 import CatalogGrid from './components/catalog/CatalogGrid';
 import ShoppingBagDrawer from './components/drawers/ShoppingBagDrawer';
+import TrackOrderModal from './components/drawers/TrackOrderModal';
+import ContactDrawer from './components/drawers/ContactDrawer';
+import AboutDrawer from './components/drawers/AboutDrawer';
 import Footer from './components/layout/Footer';
 import Toast from './components/ui/Toast';
 import PrivateRoute from './components/admin/PrivateRoute';
@@ -14,6 +17,9 @@ const AdminLayout = lazy(() => import('./pages/admin/AdminLayout'));
 
 export default function App() {
   const [currentPath, setCurrentPath] = useState(() => window.location.pathname);
+  const [trackOrderOpen, setTrackOrderOpen] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
 
   useEffect(() => {
     const handlePopState = () => {
@@ -45,12 +51,16 @@ export default function App() {
 
   // ─── PUBLIC STOREFRONT ROUTE ───────────────────────────────────────────────
   return (
-    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-neutral-900 dark:bg-[#121110] dark:text-neutral-100 transition-colors duration-200">
+    <div className="min-h-screen flex flex-col bg-[#FAF7F2] text-neutral-900 dark:bg-[#121110] dark:text-neutral-100">
       {/* Announcement bar */}
       <CampusBroadcastBar />
 
       {/* Primary nav */}
-      <HeaderNav />
+      <HeaderNav
+        onOpenTrack={() => setTrackOrderOpen(true)}
+        onOpenContact={() => setContactOpen(true)}
+        onOpenAbout={() => setAboutOpen(true)}
+      />
 
       {/* Filter bar sits above hero — matching mockup layout */}
       <StickyFilterBar />
@@ -67,7 +77,15 @@ export default function App() {
       </main>
 
       {/* Footer */}
-      <Footer />
+      <Footer
+        onOpenAbout={() => setAboutOpen(true)}
+        onOpenContact={() => setContactOpen(true)}
+        onOpenTrack={() => setTrackOrderOpen(true)}
+      />
+
+      <TrackOrderModal isOpen={trackOrderOpen} onClose={() => setTrackOrderOpen(false)} />
+      <ContactDrawer isOpen={contactOpen} onClose={() => setContactOpen(false)} />
+      <AboutDrawer isOpen={aboutOpen} onClose={() => setAboutOpen(false)} />
 
       {/* Shopping bag slide-out drawer */}
       <ShoppingBagDrawer />

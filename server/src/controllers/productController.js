@@ -13,7 +13,7 @@ export const getProducts = async (req, res) => {
     // Unless explicitly requested by admin, hide drafts from public storefront
     if (includeDrafts !== 'true') {
       filter.$or = [
-        { status: { $in: ['live', 'reserved'] } },
+        { status: { $in: ['live', 'reserved', 'sold_out'] } },
         { status: { $exists: false }, inStock: true },
         { status: null, inStock: true },
       ];

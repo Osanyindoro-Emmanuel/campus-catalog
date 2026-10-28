@@ -1,14 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { X, Upload, Link, Check, AlertCircle, Image as ImageIcon, Sparkles } from 'lucide-react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { useStoreConfig } from '../../context/StoreConfigContext';
 import { compressImageToWebP, uploadToCloudinary } from '../../utils/imageCompressor';
-
-const CATEGORIES = [
-  { value: 'clothing', label: '👕 Clothing' },
-  { value: 'footwear', label: '👟 Footwear' },
-  { value: 'bags', label: '🎒 Bags' },
-  { value: 'jewelry', label: '✨ Jewelry & Accs' },
-];
+import { DEFAULT_CATEGORIES } from '../../utils/categories';
 
 const STATUSES = [
   { value: 'live', label: '🟢 Live (In Stock)' },
@@ -19,6 +14,8 @@ const STATUSES = [
 
 export default function ProductEditorModal({ product, isOpen, onClose, onSave }) {
   const { triggerFilePickerSafeguard, clearFilePickerSafeguard } = useAdminAuth();
+  const { storeConfig } = useStoreConfig();
+  const categories = storeConfig?.categories?.length ? storeConfig.categories : DEFAULT_CATEGORIES;
 
   const isEditing = !!product?._id;
 
@@ -41,6 +38,26 @@ export default function ProductEditorModal({ product, isOpen, onClose, onSave })
   const [error, setError] = useState(null);
 
   const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    setTitle(product?.title || '');
+    setCategory(product?.category?.toLowerCase() || 'clothing');
+    setPrice(product?.price || '');
+    setSalePrice(product?.salePrice || '');
+    setStatus(product?.status || 'live');
+    setSizesInput(Array.isArray(product?.sizes) ? product.sizes.join(', ') : '');
+    setDescription(product?.description || '');
+    setImageTab('upload');
+    setImageUrl(product?.imageUrl || '');
+    setImagePreview(product?.imageUrl || '');
+    setImageSizeKb(null);
+    setCompressing(false);
+    setSaving(false);
+    setError(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, [isOpen, product?._id]);
 
   if (!isOpen) return null;
 
@@ -208,8 +225,11 @@ export default function ProductEditorModal({ product, isOpen, onClose, onSave })
                 onChange={(e) => setCategory(e.target.value)}
                 className="w-full rounded-2xl border border-black/10 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900 px-3 py-2 text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-amber-500"
               >
-                {CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>
+                {category && !categories.some((c) => c.key === category) && (
+                  <option value={category}>{category}</option>
+                )}
+                {categories.map((c) => (
+                  <option key={c.key} value={c.key}>
                     {c.label}
                   </option>
                 ))}

@@ -1,7 +1,26 @@
 import mongoose from 'mongoose';
 
+const DEFAULT_CATEGORIES = [
+  { key: 'clothing', label: 'Clothing' },
+  { key: 'footwear', label: 'Footwear' },
+  { key: 'bags', label: 'Bags' },
+  { key: 'jewelry', label: 'Jewelry & Accs' },
+];
+
+const categorySchema = new mongoose.Schema(
+  {
+    key: { type: String, required: true, lowercase: true, trim: true },
+    label: { type: String, required: true, trim: true },
+  },
+  { _id: false }
+);
+
 const storeConfigSchema = new mongoose.Schema(
   {
+    categories: {
+      type: [categorySchema],
+      default: () => DEFAULT_CATEGORIES.map((category) => ({ ...category })),
+    },
     deliveryFee: {
       type: Number,
       default: 500,
@@ -10,6 +29,15 @@ const storeConfigSchema = new mongoose.Schema(
     lectureMode: {
       type: Boolean,
       default: false,
+    },
+    inLectureMode: {
+      type: Boolean,
+      default: false,
+    },
+    lectureModeMessage: {
+      type: String,
+      default: 'Mide is in lectures right now. Orders are open; replies may be delayed until class ends.',
+      trim: true,
     },
     bankDetails: {
       bankName: {

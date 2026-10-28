@@ -1,11 +1,32 @@
-import { useState } from 'react';
-import { Megaphone, Truck, CreditCard, Save, Check, AlertCircle } from 'lucide-react';
-import { useStoreConfig } from '../../context/StoreConfigContext';
+import { useEffect, useState } from 'react';
+import { Megaphone, GraduationCap, Truck, CreditCard, Save, Check, AlertCircle, Plus, Tags } from 'lucide-react';
+import { DEFAULT_LECTURE_MODE_MESSAGE, useStoreConfig } from '../../context/StoreConfigContext';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { categoryKeyFromLabel, DEFAULT_CATEGORIES } from '../../utils/categories';
 
 export default function SettingsView() {
-  const { storeConfig, refetch } = useStoreConfig();
+  const { storeConfig, refetch, updateStoreConfig } = useStoreConfig();
   const { token } = useAdminAuth();
+  const [categories, setCategories] = useState(storeConfig?.categories || DEFAULT_CATEGORIES);
+  const [categoryDraft, setCategoryDraft] = useState('');
+  const [categorySaving, setCategorySaving] = useState(false);
+  const [categoryError, setCategoryError] = useState(null);
+  const [categorySuccess, setCategorySuccess] = useState(null);
+
+  useEffect(() => {
+    if (storeConfig?.categories?.length) setCategories(storeConfig.categories);
+  }, [storeConfig?.categories]);
+
+  const [lectureModeMessage, setLectureModeMessage] = useState(
+    storeConfig?.lectureModeMessage || DEFAULT_LECTURE_MODE_MESSAGE
+  );
+  const [lectureMessageEdited, setLectureMessageEdited] = useState(false);
+
+  useEffect(() => {
+    if (!lectureMessageEdited && storeConfig?.lectureModeMessage) {
+      setLectureModeMessage(storeConfig.lectureModeMessage);
+    }
+  }, [storeConfig?.lectureModeMessage, lectureMessageEdited]);
 
   // Broadcast state
   const [broadcastActive, setBroadcastActive] = useState(storeConfig?.broadcast?.active ?? true);
@@ -28,6 +49,50 @@ export default function SettingsView() {
   const [successMsg, setSuccessMsg] = useState(null);
   const [errorMsg, setErrorMsg] = useState(null);
 
+  const handleAddCategory = async (event) => {
+    event.preventDefault();
+    const label = categoryDraft.trim().replace(/\s+/g, ' ');
+    const key = categoryKeyFromLabel(label);
+    setCategoryError(null);
+    setCategorySuccess(null);
+
+    if (!label || !key || key === 'all') {
+      setCategoryError('Enter a valid category name.');
+      return;
+    }
+    if (categories.some((category) =>
+      category.key === key || category.label.trim().toLowerCase() === label.toLowerCase()
+    )) {
+      setCategoryError('That category already exists.');
+      return;
+    }
+
+    const updatedCategories = [...categories, { key, label }];
+    setCategorySaving(true);
+    try {
+      const base = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000/api';
+      const res = await fetch(`${base}/store-config`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ categories: updatedCategories }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.message || 'Could not save this category.');
+
+      setCategories(data.categories || updatedCategories);
+      setCategoryDraft('');
+      setCategorySuccess(`Added “${label}” to the catalog categories.`);
+      refetch?.();
+    } catch (error) {
+      setCategoryError(error.message || 'Could not save this category.');
+    } finally {
+      setCategorySaving(false);
+    }
+  };
+
   const handleSave = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -41,6 +106,7 @@ export default function SettingsView() {
         message: broadcastMessage.trim(),
         expiresAt: broadcastExpiry ? new Date(broadcastExpiry).toISOString() : null,
       },
+      lectureModeMessage: lectureModeMessage.trim() || DEFAULT_LECTURE_MODE_MESSAGE,
       bankDetails: {
         bankName: bankName.trim(),
         accountNumber: accountNumber.trim(),
@@ -59,17 +125,19 @@ export default function SettingsView() {
         body: JSON.stringify(payload),
       });
 
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        throw new Error('Failed to update settings on server.');
+        throw new Error(data.message || 'Failed to update settings on server.');
       }
 
       setSuccessMsg('Store settings updated and broadcasted live to all shoppers!');
       setTimeout(() => setSuccessMsg(null), 4000);
+      updateStoreConfig({ lectureModeMessage: payload.lectureModeMessage });
+      setLectureModeMessage(payload.lectureModeMessage);
+      setLectureMessageEdited(false);
       refetch?.();
-    } catch {
-      // Local optimistic fallback
-      setSuccessMsg('Settings saved locally and queued for sync!');
-      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (error) {
+      setErrorMsg(error.message || 'Could not save store settings. Check your connection and try again.');
     } finally {
       setSaving(false);
     }
@@ -103,6 +171,30 @@ export default function SettingsView() {
 
       <form onSubmit={handleSave} className="space-y-4">
         {/* ── Section 1: Campus Broadcast Banner ── */}
+        <section className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#1C1A18] border border-black/10 dark:border-white/10 shadow-xs space-y-3">
+          <div className="flex items-center gap-2">
+            <span className="p-1.5 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+              <GraduationCap size={16} />
+            </span>
+            <div>
+              <h2 className="font-bold text-sm text-neutral-900 dark:text-white">Lecture Mode Message</h2>
+              <p className="text-[11px] text-neutral-400">Customize the storefront message shown while Lecture Mode is on.</p>
+            </div>
+          </div>
+          <textarea
+            value={lectureModeMessage}
+            onChange={(event) => {
+              setLectureModeMessage(event.target.value);
+              setLectureMessageEdited(true);
+            }}
+            rows={2}
+            maxLength={180}
+            placeholder={DEFAULT_LECTURE_MODE_MESSAGE}
+            className="w-full resize-y rounded-2xl border border-black/10 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-amber-500"
+          />
+          <p className="text-right text-[10px] text-neutral-400">{lectureModeMessage.length}/180</p>
+        </section>
+
         <div className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#1C1A18] border border-black/10 dark:border-white/10 shadow-xs space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
@@ -265,6 +357,52 @@ export default function SettingsView() {
           </button>
         </div>
       </form>
+
+      <section className="p-4 sm:p-5 rounded-3xl bg-white dark:bg-[#1C1A18] border border-black/10 dark:border-white/10 shadow-xs space-y-4">
+        <div className="flex items-center gap-2">
+          <span className="p-1.5 rounded-xl bg-[#C07052]/10 text-[#C07052]">
+            <Tags size={16} />
+          </span>
+          <div>
+            <h2 className="font-bold text-sm text-neutral-900 dark:text-white">Product Categories</h2>
+            <p className="text-[11px] text-neutral-400">Add categories for product listings and storefront filters.</p>
+          </div>
+        </div>
+
+        {categoryError && (
+          <p className="text-xs text-red-600 dark:text-red-400" role="alert">{categoryError}</p>
+        )}
+        {categorySuccess && (
+          <p className="text-xs text-emerald-700 dark:text-emerald-400" role="status">{categorySuccess}</p>
+        )}
+
+        <form onSubmit={handleAddCategory} className="flex flex-col sm:flex-row gap-2">
+          <input
+            type="text"
+            value={categoryDraft}
+            onChange={(event) => setCategoryDraft(event.target.value)}
+            placeholder="e.g. Beauty & Personal Care"
+            maxLength={40}
+            className="min-w-0 flex-1 rounded-2xl border border-black/10 dark:border-white/10 bg-neutral-50 dark:bg-neutral-900 px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 dark:text-white focus:outline-none focus:border-amber-500"
+          />
+          <button
+            type="submit"
+            disabled={categorySaving}
+            className="inline-flex items-center justify-center gap-1.5 rounded-2xl px-4 py-2.5 bg-[#C07052] hover:bg-[#a85f44] text-white text-xs font-bold transition disabled:opacity-60"
+          >
+            <Plus size={14} />
+            {categorySaving ? 'Adding…' : 'Add Category'}
+          </button>
+        </form>
+
+        <div className="flex flex-wrap gap-2">
+          {categories.map((category) => (
+            <span key={category.key} className="rounded-full bg-neutral-100 dark:bg-white/10 px-3 py-1 text-[11px] font-medium text-neutral-700 dark:text-neutral-200">
+              {category.label}
+            </span>
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

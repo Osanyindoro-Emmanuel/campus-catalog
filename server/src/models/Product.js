@@ -10,10 +10,6 @@ const productSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Please specify a category'],
-      enum: {
-        values: ['clothing', 'footwear', 'bags', 'jewelry'],
-        message: '{VALUE} is not a supported category',
-      },
       lowercase: true,
       trim: true,
     },

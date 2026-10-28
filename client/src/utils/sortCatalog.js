@@ -10,10 +10,10 @@ const STATUS_PRIORITY = {
  */
 export function sortCatalog(products, sortBy = 'popular', searchQuery = '', activeCategory = 'all') {
   return products
-    // 0. Only items with status: 'live' or status: 'reserved' are displayed on public storefront (drafts remain completely hidden)
+    // Keep sold-out items visible so shoppers can request a restock; drafts remain hidden.
     .filter((item) => {
       const status = item.status || (item.inStock ? 'live' : 'sold_out');
-      return status === 'live' || status === 'reserved';
+      return status === 'live' || status === 'reserved' || status === 'sold_out';
     })
     // 1. Filter by Active Category
     .filter((item) => {

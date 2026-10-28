@@ -83,8 +83,8 @@ export function generateWhatsAppOrderUrl(cart, fulfillmentMethod, studentDetails
     message += `_(Please send your payment receipt screenshot here after transfer)_\n`;
   }
 
-  if (storeConfig?.lectureMode) {
-    message += `\n📚 _Note: I see Lecture Mode is active; I'll await your reply once class is over!_\n`;
+  if (storeConfig?.inLectureMode) {
+    message += `\n_Note: ${storeConfig.lectureModeMessage}_\n`;
   }
 
   message += `\nHi Mide, I am ready to confirm this order. Are these items available for delivery today?`;

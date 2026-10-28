@@ -1,4 +1,4 @@
-export default function Footer() {
+export default function Footer({ onOpenAbout, onOpenContact, onOpenTrack }) {
   return (
     <footer className="bg-[#FAF7F2] dark:bg-[#121110] border-t border-black/5 dark:border-white/10 mt-16">
       <div className="max-w-7xl mx-auto px-4 py-10">
@@ -24,17 +24,14 @@ export default function Footer() {
           {/* Customer utility links — zero admin exposure */}
           <div className="flex items-center gap-5">
             {[
-              { label: 'About' },
-              { label: 'Contact' },
-              { label: 'Track Order' },
-            ].map(({ label }) => (
+              { label: 'About', action: onOpenAbout },
+              { label: 'Contact', action: onOpenContact },
+              { label: 'Track Order', action: onOpenTrack },
+            ].map(({ label, action }) => (
               <button
                 key={label}
-                className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white transition-colors font-medium"
-                onClick={() => {
-                  // These trigger modals via header — scroll to top to access them
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }}
+                className="text-sm text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white font-medium"
+                onClick={action}
               >
                 {label}
               </button>

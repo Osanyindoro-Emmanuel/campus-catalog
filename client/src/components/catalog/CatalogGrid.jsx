@@ -34,7 +34,7 @@ export default function CatalogGrid() {
   }
 
   return (
-    <div className="pt-1 pb-8 px-4 max-w-7xl mx-auto">
+    <div className="pt-1 pb-8 px-4 lg:px-0 max-w-5xl mx-auto">
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-4">
         {filteredProducts.map((product) => (
           <ProductCard key={product._id} product={product} />
